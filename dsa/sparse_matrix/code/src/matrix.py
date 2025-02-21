@@ -1,5 +1,3 @@
-import os
-
 class SparseMatrix:
     def __init__(self, matrixFilePath=None, numRows=None, numCols=None):
         """
@@ -17,7 +15,9 @@ class SparseMatrix:
             # Initialize an empty matrix with the given dimensions
             self.numRows = numRows
             self.numCols = numCols
-            self.data = {}  # Dictionary to store non-zero elements: key=(row, col), value=value
+            self.data = (
+                {}
+            )  # Dictionary to store non-zero elements: key=(row, col), value=value
 
     def load_from_file(self, matrixFilePath):
         """
@@ -31,7 +31,7 @@ class SparseMatrix:
             FileNotFoundError: If the file does not exist.
         """
         try:
-            with open(matrixFilePath, 'r') as file:
+            with open(matrixFilePath, "r") as file:
                 # Read and clean the file lines
                 lines = [line.strip() for line in file if line.strip()]
 
@@ -40,15 +40,17 @@ class SparseMatrix:
                     raise ValueError("Input file has wrong format")
 
                 # Parse the number of rows and columns
-                self.numRows = int(lines[0].split('=')[1].strip())
-                self.numCols = int(lines[1].split('=')[1].strip())
+                self.numRows = int(lines[0].split("=")[1].strip())
+                self.numCols = int(lines[1].split("=")[1].strip())
                 self.data = {}  # Dictionary to store non-zero elements
 
                 # Parse the non-zero elements
                 for line in lines[2:]:
                     try:
                         # Remove parentheses and split into row, column, and value
-                        row, col, val = line.replace('(', '').replace(')', '').split(', ')
+                        row, col, val = (
+                            line.replace("(", "").replace(")", "").split(", ")
+                        )
                         self.data[(int(row), int(col))] = int(val)
                     except ValueError:
                         raise ValueError("Input file has wrong format")
@@ -167,7 +169,9 @@ class SparseMatrix:
             for (k_other, j), val_other in other.data.items():
                 if k == k_other:  # Ensure the column of self matches the row of other
                     # Multiply and accumulate the result
-                    result.set_element(i, j, result.get_element(i, j) + val_self * val_other)
+                    result.set_element(
+                        i, j, result.get_element(i, j) + val_self * val_other
+                    )
 
         return result
 
@@ -178,7 +182,7 @@ class SparseMatrix:
         Args:
             filename (str): Path to the output file.
         """
-        with open(filename, 'w') as file:
+        with open(filename, "w") as file:
             # Write the number of rows and columns
             file.write(f"rows={self.numRows}\n")
             file.write(f"cols={self.numCols}\n")
@@ -202,11 +206,8 @@ class SparseMatrix:
 
 def main():
     # Use relative paths for input files
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    sample_inputs_dir = os.path.join(base_dir, "sample_inputs")
-
-    matrixFilePath1 = os.path.join(sample_inputs_dir, "matrix1.txt")
-    matrixFilePath2 = os.path.join(sample_inputs_dir, "matrix2.txt")
+    matrixFilePath1 = "../../sample_inputs/matrix1.txt"
+    matrixFilePath2 = "../../sample_inputs/matrix2.txt"
 
     try:
         # Load matrices from the input files
@@ -225,15 +226,15 @@ def main():
     try:
         if operation == 1:
             result = matrix1.add(matrix2)
-            result.save_to_file(os.path.join(sample_inputs_dir, "addition_result.txt"))
+            result.save_to_file("../../results/addition_result.txt")
             print("Addition result saved to addition_result.txt")
         elif operation == 2:
             result = matrix1.subtract(matrix2)
-            result.save_to_file(os.path.join(sample_inputs_dir, "subtraction_result.txt"))
+            result.save_to_file("../../results/subtraction_result.txt")
             print("Subtraction result saved to subtraction_result.txt")
         elif operation == 3:
             result = matrix1.multiply(matrix2)
-            result.save_to_file(os.path.join(sample_inputs_dir, "multiplication_result.txt"))
+            result.save_to_file("../../results/multiplication_result.txt")
             print("Multiplication result saved to multiplication_result.txt")
         else:
             print("Invalid choice")
