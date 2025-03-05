@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+
+
 class SparseMatrix:
     def __init__(self, matrixFilePath=None, numRows=None, numCols=None):
         """
@@ -33,15 +36,15 @@ class SparseMatrix:
         try:
             with open(matrixFilePath, "r") as file:
                 # Read and clean the file lines
-                lines = [line.strip() for line in file if line.strip()]
+                lines = [stripped for line in file if (stripped := line.strip())]
 
                 # Check if the file starts with "rows=" and "cols="
                 if not lines[0].startswith("rows=") or not lines[1].startswith("cols="):
                     raise ValueError("Input file has wrong format")
 
                 # Parse the number of rows and columns
-                self.numRows = int(lines[0].split("=")[1].strip())
-                self.numCols = int(lines[1].split("=")[1].strip())
+                self.numRows = int(lines[0].split("=")[1])
+                self.numCols = int(lines[1].split("=")[1])
                 self.data = {}  # Dictionary to store non-zero elements
 
                 # Parse the non-zero elements
@@ -86,122 +89,62 @@ class SparseMatrix:
             # Remove the key if the value is zero (to maintain sparsity)
             del self.data[(currRow, currCol)]
 
-    def add(self, other):
-        """
-        Add another sparse matrix to this matrix.
+    def add(self, other_matrix):
+        # check if the cols and rows are equal for both matrices
+        if (
+            self.numCols == other_matrix.numCols
+            and self.numRows == other_matrix.numRows
+        ):
+            # make a new matrix that stores the added values
+            result = SparseMatrix(None, self.numCols, self.numRows)
+            for (row, col), val in self.data.items():
+                result.set_element(
+                    row,
+                    col,
+                    (val + other_matrix.get_element(row, col)),
+                )
+            for i, val in result.data.items():
+                print(i, val)
+        else:
+            print("Matrices provided are not compatible")
 
-        Args:
-            other (SparseMatrix): The matrix to add.
+    def sub(self, other_matrix):
+        # check if the cols and rows are equal for both matrices
+        if (
+            self.numCols == other_matrix.numCols
+            and self.numRows == other_matrix.numRows
+        ):
+            # make a new matrix that stores the substracted values
+            result = SparseMatrix(None, self.numCols, self.numRows)
+            for (row, col), val in self.data.items():
+                result.set_element(
+                    row,
+                    col,
+                    (val - other_matrix.get_element(row, col)),
+                )
+            for i, val in result.data.items():
+                print(i, val)
+        else:
+            print("Matrices provided are not compatible")
 
-        Returns:
-            SparseMatrix: The result of the addition.
-
-        Raises:
-            ValueError: If the matrices have incompatible dimensions.
-        """
-        if self.numRows != other.numRows or self.numCols != other.numCols:
-            raise ValueError("Matrix dimensions are incompatible for addition")
-
-        # Create a new matrix to store the result
-        result = SparseMatrix(numRows=self.numRows, numCols=self.numCols)
-
-        # Copy all non-zero elements from this matrix to the result
-        for (row, col), value in self.data.items():
-            result.set_element(row, col, value)
-
-        # Add non-zero elements from the other matrix to the result
-        for (row, col), value in other.data.items():
-            result.set_element(row, col, result.get_element(row, col) + value)
-
-        return result
-
-    def subtract(self, other):
-        """
-        Subtract another sparse matrix from this matrix.
-
-        Args:
-            other (SparseMatrix): The matrix to subtract.
-
-        Returns:
-            SparseMatrix: The result of the subtraction.
-
-        Raises:
-            ValueError: If the matrices have incompatible dimensions.
-        """
-        if self.numRows != other.numRows or self.numCols != other.numCols:
-            raise ValueError("Matrix dimensions are incompatible for subtraction")
-
-        # Create a new matrix to store the result
-        result = SparseMatrix(numRows=self.numRows, numCols=self.numCols)
-
-        # Copy all non-zero elements from this matrix to the result
-        for (row, col), value in self.data.items():
-            result.set_element(row, col, value)
-
-        # Subtract non-zero elements from the other matrix from the result
-        for (row, col), value in other.data.items():
-            result.set_element(row, col, result.get_element(row, col) - value)
-
-        return result
-
-    def multiply(self, other):
-        """
-        Multiply this sparse matrix with another sparse matrix.
-
-        Args:
-            other (SparseMatrix): The matrix to multiply with.
-
-        Returns:
-            SparseMatrix: The result of the multiplication.
-
-        Raises:
-            ValueError: If the matrices have incompatible dimensions.
-        """
-        if self.numCols != other.numRows:
-            raise ValueError("Matrix dimensions are incompatible for multiplication")
-
-        # Create a new matrix to store the result
-        result = SparseMatrix(numRows=self.numRows, numCols=other.numCols)
-
-        # Iterate over non-zero elements in this matrix
-        for (i, k), val_self in self.data.items():
-            # Iterate over non-zero elements in the other matrix where the row matches k
-            for (k_other, j), val_other in other.data.items():
-                if k == k_other:  # Ensure the column of self matches the row of other
-                    # Multiply and accumulate the result
-                    result.set_element(
-                        i, j, result.get_element(i, j) + val_self * val_other
-                    )
-
-        return result
-
-    def save_to_file(self, filename):
-        """
-        Save the matrix to a file.
-
-        Args:
-            filename (str): Path to the output file.
-        """
-        with open(filename, "w") as file:
-            # Write the number of rows and columns
-            file.write(f"rows={self.numRows}\n")
-            file.write(f"cols={self.numCols}\n")
-
-            # Write the non-zero elements
-            for (row, col), value in self.data.items():
-                file.write(f"({row}, {col}, {value})\n")
-
-    def __str__(self):
-        """
-        Return a string representation of the matrix.
-
-        Returns:
-            str: A string showing the matrix dimensions and non-zero elements.
-        """
-        result = f"rows={self.numRows}\ncols={self.numCols}\n"
-        for (row, col), value in self.data.items():
-            result += f"({row}, {col}, {value})\n"
-        return result
+    def mult(self, other_matrix):
+        # check if the cols and rows are equal for both matrices
+        if (
+            self.numCols == other_matrix.numCols
+            and self.numRows == other_matrix.numRows
+        ):
+            # make a new matrix that stores the multiplied values
+            result = SparseMatrix(None, self.numCols, self.numRows)
+            for (row, col), val in self.data.items():
+                result.set_element(
+                    row,
+                    col,
+                    (val * other_matrix.get_element(row, col)),
+                )
+            for i, val in result.data.items():
+                print(i, val)
+        else:
+            print("Matrices provided are not compatible")
 
 
 def main():
@@ -213,33 +156,11 @@ def main():
         # Load matrices from the input files
         matrix1 = SparseMatrix(matrixFilePath1)
         matrix2 = SparseMatrix(matrixFilePath2)
+        matrix1.add(matrix2)
+        matrix2.sub(matrix1)
+        matrix1.mult(matrix2)
     except Exception as e:
-        print(f"Error: {e}")
-        return
-
-    print("Select an operation:")
-    print("1. Addition")
-    print("2. Subtraction")
-    print("3. Multiplication")
-    operation = int(input("Enter your choice: "))
-
-    try:
-        if operation == 1:
-            result = matrix1.add(matrix2)
-            result.save_to_file("../../results/addition_result.txt")
-            print("Addition result saved to addition_result.txt")
-        elif operation == 2:
-            result = matrix1.subtract(matrix2)
-            result.save_to_file("../../results/subtraction_result.txt")
-            print("Subtraction result saved to subtraction_result.txt")
-        elif operation == 3:
-            result = matrix1.multiply(matrix2)
-            result.save_to_file("../../results/multiplication_result.txt")
-            print("Multiplication result saved to multiplication_result.txt")
-        else:
-            print("Invalid choice")
-    except Exception as e:
-        print(f"Error: {e}")
+        print(e)
 
 
 if __name__ == "__main__":
