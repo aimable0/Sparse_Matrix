@@ -103,8 +103,7 @@ class SparseMatrix:
                     col,
                     (val + other_matrix.get_element(row, col)),
                 )
-            for i, val in result.data.items():
-                print(i, val)
+            return result
         else:
             print("Matrices provided are not compatible")
 
@@ -122,8 +121,7 @@ class SparseMatrix:
                     col,
                     (val - other_matrix.get_element(row, col)),
                 )
-            for i, val in result.data.items():
-                print(i, val)
+            return result
         else:
             print("Matrices provided are not compatible")
 
@@ -141,10 +139,37 @@ class SparseMatrix:
                     col,
                     (val * other_matrix.get_element(row, col)),
                 )
-            for i, val in result.data.items():
-                print(i, val)
+            return result
         else:
             print("Matrices provided are not compatible")
+
+    def save_to_file(self, filename):
+        """
+        Save the matrix to a file.
+
+        Args:
+            filename (str): Path to the output file.
+        """
+        with open(filename, "w") as file:
+            # Write the number of rows and columns
+            file.write(f"rows={self.numRows}\n")
+            file.write(f"cols={self.numCols}\n")
+
+            # Write the non-zero elements
+            for (row, col), value in self.data.items():
+                file.write(f"({row}, {col}, {value})\n")
+
+    def __str__(self):
+        """
+        Return a string representation of the matrix.
+
+        Returns:
+            str: A string showing the matrix dimensions and non-zero elements.
+        """
+        result = f"rows={self.numRows}\ncols={self.numCols}\n"
+        for (row, col), value in self.data.items():
+            result += f"({row}, {col}, {value})\n"
+        return result
 
 
 def main():
@@ -156,11 +181,33 @@ def main():
         # Load matrices from the input files
         matrix1 = SparseMatrix(matrixFilePath1)
         matrix2 = SparseMatrix(matrixFilePath2)
-        matrix1.add(matrix2)
-        matrix2.sub(matrix1)
-        matrix1.mult(matrix2)
-    except Exception as e:
-        print(e)
+    except Exception as error:
+        print(error)
+        return
+    print("Select an operation:")
+    print("1. Addition")
+    print("2. Subtraction")
+    print("3. Multiplication")
+    operation = int(input("Enter your choice: "))
+
+    try:
+        if operation == 1:
+            result = matrix1.add(matrix2)
+            print(result)
+            result.save_to_file("../../results/addition_result.txt")
+            print("Addition result saved to addition_result.txt")
+        elif operation == 2:
+            result = matrix1.sub(matrix2)
+            result.save_to_file("../../results/subtraction_result.txt")
+            print("Subtraction result saved to subtraction_result.txt")
+        elif operation == 3:
+            result = matrix1.mult(matrix2)
+            result.save_to_file("../../results/multiplication_result.txt")
+            print("Multiplication result saved to multiplication_result.txt")
+        else:
+            print("Invalid choice")
+    except Exception as error:
+        print(f"Error: {error}")
 
 
 if __name__ == "__main__":
